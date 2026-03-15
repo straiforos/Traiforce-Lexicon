@@ -211,21 +211,4 @@ flowchart TD
     AV --> UC
 ```
 
----
 
-## Lexicon Relationships
-
-```mermaid
-graph TD
-    AP["net.traiforce.actor.profile<br/>---<br/>displayName<br/>vaultCid<br/>gatewayUrl"]
-    FI["net.traiforce.feed.item<br/>---<br/>contentCid<br/>blurHash<br/>gatekeeperDid"]
-    AG["net.traiforce.actor.grant<br/>---<br/>subjectDid<br/>issuerDid<br/>signature<br/>expiry"]
-    IPFS[("IPFS")]
-    GK["Gatekeeper<br/>validates + issues JWT"]
-
-    AP -->|"vaultCid"| IPFS
-    FI -->|"gatekeeperDid"| GK
-    AP -->|"issuerDid"| AG
-    FI -->|"governs access to"| AG
-    AG --> GK
-```
