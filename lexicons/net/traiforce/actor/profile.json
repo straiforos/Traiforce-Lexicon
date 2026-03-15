@@ -1,0 +1,32 @@
+{
+  "lexicon": 1,
+  "id": "net.traiforce.actor.profile",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "Defines the user's presence on the Traiforce network. The public fields are readable by all ATproto users; full profile data is stored encrypted on IPFS.",
+      "key": "literal:self",
+      "record": {
+        "type": "object",
+        "required": ["displayName", "vaultCid", "gatewayUrl"],
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "Public-facing teaser name visible to all ATproto users.",
+            "maxLength": 640,
+            "maxGraphemes": 64
+          },
+          "vaultCid": {
+            "type": "string",
+            "description": "IPFS CID pointing to the user's encrypted full profile JSON blob."
+          },
+          "gatewayUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "Address of the user's dedicated Pinata Gateway (e.g., https://alice.mypinata.cloud)."
+          }
+        }
+      }
+    }
+  }
+}

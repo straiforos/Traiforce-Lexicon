@@ -1,0 +1,36 @@
+{
+  "lexicon": 1,
+  "id": "net.traiforce.actor.grant",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "An Access Control List (ACL) entry that authorizes a specific user to access gated content.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["subjectDid", "issuerDid", "signature"],
+        "properties": {
+          "subjectDid": {
+            "type": "string",
+            "format": "did",
+            "description": "DID of the user being granted access."
+          },
+          "issuerDid": {
+            "type": "string",
+            "format": "did",
+            "description": "DID of the content creator issuing the grant."
+          },
+          "signature": {
+            "type": "string",
+            "description": "Cryptographic signature from issuerDid verifying authenticity of the grant."
+          },
+          "expiry": {
+            "type": "string",
+            "format": "datetime",
+            "description": "Optional expiration timestamp; checked by the Gatekeeper on every session handshake."
+          }
+        }
+      }
+    }
+  }
+}
