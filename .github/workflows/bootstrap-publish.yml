@@ -1,0 +1,39 @@
+# TEMPORARY — delete this file after the first successful publish to npmjs.com.
+# This workflow uses a classic NPM_TOKEN to perform the initial manual publish so
+# that the package exists on the registry before Trusted Publishing (OIDC) can be
+# enabled in the npmjs.com dashboard.
+
+name: Bootstrap Publish (one-time)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  bootstrap-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate lexicon types
+        run: npm run gen
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Publish to npmjs.com
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
