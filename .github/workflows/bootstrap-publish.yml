@@ -7,6 +7,9 @@ name: Bootstrap Publish (one-time)
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - copilot/add-publishing-workflows
 
 jobs:
   bootstrap-publish:
