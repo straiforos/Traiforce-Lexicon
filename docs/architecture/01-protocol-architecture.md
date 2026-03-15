@@ -66,9 +66,9 @@ The **Coordination Layer** (Gatekeeper) is a decentralized sidecar service that 
 
 ```mermaid
 flowchart TD
-    PDS["ATproto PDS\nStores grant records\nnet.traiforce.actor.grant"]
-    IPFS["IPFS / Pinata\nStores encrypted blobs\nvaultCid · contentCid"]
-    GK["GATEKEEPER\nCoordination Layer"]
+    PDS["ATproto PDS<br/>Stores grant records<br/>net.traiforce.actor.grant"]
+    IPFS["IPFS / Pinata<br/>Stores encrypted blobs<br/>vaultCid · contentCid"]
+    GK["GATEKEEPER<br/>Coordination Layer"]
     CA["CLIENT APP"]
     PG["PINATA GATEWAY"]
 

@@ -16,9 +16,9 @@ This directory contains architecture diagrams and technical specifications for t
 
 ```mermaid
 graph LR
-    PL["**Public Layer**\n(ATproto PDS)\n\nSocial meta · Discovery\nGrant records"]
-    EL["**Encrypted / Gated Layer**\n(IPFS / Pinata)\n\nHigh-bandwidth media\nPrivate profile data"]
-    CL["**Coordination Layer**\n(Gatekeeper)\n\nValidates grants\nIssues JWT URLs"]
+    PL["Public Layer<br/>(ATproto PDS)<br/><br/>Social meta · Discovery<br/>Grant records"]
+    EL["Encrypted / Gated Layer<br/>(IPFS / Pinata)<br/><br/>High-bandwidth media<br/>Private profile data"]
+    CL["Coordination Layer<br/>(Gatekeeper)<br/><br/>Validates grants<br/>Issues JWT URLs"]
     Client(["Client Application"])
 
     PL -->|"metadata & grants"| Client

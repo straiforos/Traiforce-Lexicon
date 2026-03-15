@@ -6,11 +6,11 @@ The following diagram shows all major components of the Traiforce Protocol and t
 
 ```mermaid
 graph TB
-    PDS["USER PDS\nATproto\n──────────────\nStores:\n• actor.profile\n• feed.item\n• actor.grant"]
-    Relay["ATPROTO RELAY\n──────────────\nServes:\n• feed.item records\n• actor.profile\n• actor.grant"]
-    Client["CLIENT / APP\n──────────────\n1. Feed discovery\n2. Pre-flight check\n3. Challenge signing\n4. JWT URL fetch"]
-    GK["GATEKEEPER\n──────────────\nValidates:\n1. Grant exists\n2. T_timestamp sig\n3. Grant not expired\n4. Issuer signature"]
-    Pinata["PINATA GATEWAY\n──────────────\nHosts:\n• Encrypted content\n• Encrypted vault"]
+    PDS["USER PDS<br/>ATproto<br/>---<br/>Stores:<br/>• actor.profile<br/>• feed.item<br/>• actor.grant"]
+    Relay["ATPROTO RELAY<br/>---<br/>Serves:<br/>• feed.item records<br/>• actor.profile<br/>• actor.grant"]
+    Client["CLIENT / APP<br/>---<br/>1. Feed discovery<br/>2. Pre-flight check<br/>3. Challenge signing<br/>4. JWT URL fetch"]
+    GK["GATEKEEPER<br/>---<br/>Validates:<br/>1. Grant exists<br/>2. T_timestamp sig<br/>3. Grant not expired<br/>4. Issuer signature"]
+    Pinata["PINATA GATEWAY<br/>---<br/>Hosts:<br/>• Encrypted content<br/>• Encrypted vault"]
 
     PDS <-->|"SYNC"| Relay
     Relay -->|"ITEM METADATA"| Client
@@ -33,13 +33,13 @@ flowchart LR
     Client["Client / App"]
     Pinata["Pinata Gateway"]
 
-    PDS -->|"① SYNC\nall lexicon records"| Relay
-    Relay -->|"② ITEM METADATA\nfeed.item records"| Client
-    PDS -->|"③ GRANT RECORD\nread by Gatekeeper"| GK
-    Client -->|"④ ACCESS REQUEST\nDID + signed challenge"| GK
-    GK -->|"⑤ ISSUE JWT\nSubmarined JWT URL"| Client
-    Client -->|"⑥ FETCH CONTENT\nJWT URL request"| Pinata
-    Pinata -->|"⑦ ENCRYPTED BLOB\ndecrypted client-side"| Client
+    PDS -->|"① SYNC<br/>all lexicon records"| Relay
+    Relay -->|"② ITEM METADATA<br/>feed.item records"| Client
+    PDS -->|"③ GRANT RECORD<br/>read by Gatekeeper"| GK
+    Client -->|"④ ACCESS REQUEST<br/>DID + signed challenge"| GK
+    GK -->|"⑤ ISSUE JWT<br/>Submarined JWT URL"| Client
+    Client -->|"⑥ FETCH CONTENT<br/>JWT URL request"| Pinata
+    Pinata -->|"⑦ ENCRYPTED BLOB<br/>decrypted client-side"| Client
 ```
 
 ---
@@ -61,9 +61,9 @@ flowchart LR
 ```mermaid
 graph TB
     subgraph Alice["Alice's Infrastructure"]
-        APDS["Alice's PDS\nATproto"]
-        AGK["Gatekeeper\nsidecar"]
-        APinata["Pinata Gateway\nIPFS host"]
+        APDS["Alice's PDS<br/>ATproto"]
+        AGK["Gatekeeper<br/>sidecar"]
+        APinata["Pinata Gateway<br/>IPFS host"]
         APDS --> APinata
         AGK --> APinata
     end
@@ -74,7 +74,7 @@ graph TB
     end
 
     subgraph Bob["Bob's Infrastructure"]
-        BPDS["Bob's PDS\nATproto"]
+        BPDS["Bob's PDS<br/>ATproto"]
         BClient["Bob's Client App"]
     end
 
