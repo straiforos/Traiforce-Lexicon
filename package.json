@@ -25,7 +25,7 @@
     "url": "https://github.com/straiforos/Traiforce-Lexicon.git"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   },
   "dependencies": {
     "@atproto/lexicon": "^0.6.2",
