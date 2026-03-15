@@ -115,6 +115,88 @@ Traiforce-Lexicon/
 
 ---
 
+## Integrating with Traiforce
+
+This section is aimed at third-party developers who want to consume Traiforce lexicons within their own AT Protocol applications.
+
+### Code Generation
+
+Use [`@atproto/lex-cli`](https://www.npmjs.com/package/@atproto/lex-cli) to generate TypeScript types directly from the `.json` definitions in the `/lexicons` folder:
+
+```bash
+npx @atproto/lex-cli generate-api \
+  --lexicon-dir ./lexicons \
+  --out-dir ./src/generated
+```
+
+This produces strongly-typed TypeScript interfaces and `isRecord` helper functions for every lexicon defined under `net.traiforce`.
+
+### Detection Logic
+
+Once types are generated, use the `isRecord` helpers to identify `net.traiforce.feed.item` records as they arrive from a PDS repository export or a Firehose subscription:
+
+```typescript
+import { isRecord as isFeedItem } from './generated/types/net/traiforce/feed/item';
+
+function processFirehoseRecord(record: unknown): void {
+  if (isFeedItem(record)) {
+    console.log('Feed item detected:', record.contentCid);
+    console.log('Gatekeeper DID:', record.gatekeeperDid);
+    // Route to access-request flow…
+  }
+}
+```
+
+> **Tip:** When subscribing to the AT Protocol Firehose (`com.atproto.sync.subscribeRepos`), inspect `op.payload` from each `#commit` event and pass it through `isFeedItem` to filter Traiforce content without any manual `$type` string comparisons.
+
+### The Private Like Standard
+
+`net.traiforce.graph.privateLike` records encode a privacy-preserving signal: a user's appreciation of a piece of content without revealing the target publicly. Verification works as follows:
+
+1. **Inputs** — the `contentUri` of the liked item and the `creatorDid` of the user who issued the like.
+2. **Salt derivation** — treat `creatorDid` as a UTF-8 salt string.
+3. **Hash** — compute `SHA-256(contentUri + "|" + creatorDid)` and encode the result as a lowercase hex string. The `|` delimiter prevents length-extension collisions between the two inputs.
+4. **Compare** — the computed hash must equal the `hash` field stored in the record.
+
+```typescript
+import { createHash } from 'node:crypto';
+
+function verifyPrivateLike(
+  contentUri: string,
+  creatorDid: string,
+  recordHash: string,
+): boolean {
+  const expected = createHash('sha256')
+    .update(`${contentUri}|${creatorDid}`, 'utf8')
+    .digest('hex');
+  return expected === recordHash;
+}
+
+// Example usage
+const isValid = verifyPrivateLike(
+  'at://did:plc:abc123/net.traiforce.feed.item/3jui7kd52c200',
+  'did:plc:creator456',
+  '<hash field from the privateLike record>',
+);
+```
+
+> **Note:** The `creatorDid` acts as a per-user salt so that the same `contentUri` produces a different hash for every user, preventing trivial cross-user correlation of private likes.
+
+### Pinata Gateway Logic
+
+Media stored under a `net.traiforce.feed.item` record is encrypted and hosted on IPFS via a private Pinata Gateway. Clients **cannot** access content directly with the `contentCid` alone.
+
+To retrieve media:
+
+1. Read the `gatekeeperDid` field from the `net.traiforce.feed.item` record.
+2. Resolve the Gatekeeper's service endpoint by fetching and parsing its DID document (e.g., via `https://plc.directory/<did>` for `did:plc` DIDs or the `.well-known/did.json` path for `did:web` DIDs) and extracting the appropriate `#atproto_pds` or custom service entry.
+3. Complete the challenge–response handshake (see [Access Workflow](./docs/architecture/03-access-workflow.md)) to receive a **signed JWT URL** scoped to the requested CID.
+4. Use the JWT URL to fetch the encrypted blob directly from the Pinata Gateway — no additional credentials are required once you hold the URL.
+
+The JWT URL is short-lived and single-use; clients should not cache or share it.
+
+---
+
 ## Documentation
 
 Full architecture documentation is available in [`docs/architecture/`](./docs/architecture/):
