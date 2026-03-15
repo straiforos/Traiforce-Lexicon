@@ -127,6 +127,66 @@ Full architecture documentation is available in [`docs/architecture/`](./docs/ar
 
 ---
 
+## Installation
+
+This package is published to the [GitHub NPM Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry). Add the following to your project's `.npmrc` to tell npm where to resolve `@straiforos` packages:
+
+```
+@straiforos:registry=https://npm.pkg.github.com
+```
+
+Then install the SDK:
+
+```bash
+npm install @straiforos/traiforce-sdk
+```
+
+---
+
+## Usage
+
+### Importing generated lexicon types
+
+```typescript
+import {
+  NetTraiforceActorProfile,
+  NetTraiforceActorGrant,
+  NetTraiforceFeedItem,
+} from '@straiforos/traiforce-sdk'
+
+// Use the generated record types
+const profile: NetTraiforceActorProfile.Record = {
+  displayName: 'Alice',
+  vaultCid: 'bafybeiabc123',
+  gatewayUrl: 'https://alice.mypinata.cloud',
+}
+
+const feedItem: NetTraiforceFeedItem.Record = {
+  contentCid: 'bafybeixyz456',
+  blurHash: 'LEHV6nWB2yk8pyo0adR*.7kCMdnj',
+  gatekeeperDid: 'did:plc:gatekeeper',
+}
+
+const grant: NetTraiforceActorGrant.Record = {
+  subjectDid: 'did:plc:bob',
+  issuerDid: 'did:plc:alice',
+  signature: '<cryptographic-signature>',
+}
+```
+
+### Blinded hash for private likes
+
+```typescript
+import { getBlindedHash } from '@straiforos/traiforce-sdk'
+
+// Compute HMAC-SHA256(creatorDid, contentUri) before storing the engagement
+// record on the public ATproto PDS so observers cannot infer subscriptions.
+const blindedHash = getBlindedHash('did:plc:alice', 'ipfs://bafybeiabc123')
+// Store `blindedHash` instead of the raw contentUri
+```
+
+---
+
 ## Contributing
 
 Contributions are welcome! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on how to propose changes, report issues, and submit pull requests.
