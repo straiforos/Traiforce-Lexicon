@@ -30,9 +30,9 @@ classDiagram
 ```mermaid
 flowchart TD
     UC["User creates profile"]
-    DN["displayName → ATproto PDS\nreadable by all"]
-    FP["Full profile JSON\n→ encrypted → IPFS\nvaultCid stored in PDS"]
-    GU["gatewayUrl → ATproto PDS\nreadable by all"]
+    DN["displayName → ATproto PDS<br/>readable by all"]
+    FP["Full profile JSON<br/>→ encrypted → IPFS<br/>vaultCid stored in PDS"]
+    GU["gatewayUrl → ATproto PDS<br/>readable by all"]
 
     UC --> DN
     UC --> FP
@@ -65,9 +65,9 @@ classDiagram
 ```mermaid
 flowchart TD
     CU["Creator uploads content"]
-    ENC["Content encrypted → IPFS\ncontentCid"]
-    BH["blurHash generated → ATproto PDS\npublic preview"]
-    FI["contentCid + gatekeeperDid → ATproto PDS\nfeed.item record"]
+    ENC["Content encrypted → IPFS<br/>contentCid"]
+    BH["blurHash generated → ATproto PDS<br/>public preview"]
+    FI["contentCid + gatekeeperDid → ATproto PDS<br/>feed.item record"]
 
     CU --> ENC
     CU --> BH
@@ -104,8 +104,8 @@ flowchart TD
     AD["Alice signs grant record with PDS key"]
     PUB["Grant record published to ATproto PDS"]
     BR["Bob requests access"]
-    GV["Gatekeeper reads grant record\n→ verifies signature"]
-    AP["Access provisioned\nJWT URL issued"]
+    GV["Gatekeeper reads grant record<br/>→ verifies signature"]
+    AP["Access provisioned<br/>JWT URL issued"]
 
     AD --> PUB
     PUB --> GV
@@ -119,11 +119,11 @@ flowchart TD
 
 ```mermaid
 graph TD
-    AP["net.traiforce.actor.profile\n──────────────────\ndisplayName\nvaultCid\ngatewayUrl"]
-    FI["net.traiforce.feed.item\n──────────────────\ncontentCid\nblurHash\ngatekeeperDid"]
-    AG["net.traiforce.actor.grant\n──────────────────\nsubjectDid\nissuerDid\nsignature\nexpiry"]
+    AP["net.traiforce.actor.profile<br/>---<br/>displayName<br/>vaultCid<br/>gatewayUrl"]
+    FI["net.traiforce.feed.item<br/>---<br/>contentCid<br/>blurHash<br/>gatekeeperDid"]
+    AG["net.traiforce.actor.grant<br/>---<br/>subjectDid<br/>issuerDid<br/>signature<br/>expiry"]
     IPFS[("IPFS")]
-    GK["Gatekeeper\nvalidates + issues JWT"]
+    GK["Gatekeeper<br/>validates + issues JWT"]
 
     AP -->|"vaultCid"| IPFS
     FI -->|"gatekeeperDid"| GK

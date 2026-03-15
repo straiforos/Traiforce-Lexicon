@@ -19,7 +19,7 @@ Traiforce obfuscates engagement metadata by storing a salted hash of the interac
 ```mermaid
 flowchart LR
     Like["Like(Alice, ContentURI)"]
-    Hash["H( salt || ContentURI )\nstored on-chain"]
+    Hash["H( salt || ContentURI )<br/>stored on-chain"]
     Like -->|"salted hash"| Hash
 ```
 
@@ -29,7 +29,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    Store[("Stored:\nH(salt || ContentURI)")]
+    Store[("Stored:<br/>H(salt || ContentURI)")]
 
     subgraph Known["Party with access (knows ContentURI)"]
         K1["Compute H(salt || ContentURI)"]
@@ -40,7 +40,7 @@ flowchart LR
 
     subgraph Unknown["Observer (no ContentURI)"]
         U1["Sees: H(salt || ???)"]
-        U2["✗ Cannot reverse hash\nwithout ContentURI"]
+        U2["✗ Cannot reverse hash<br/>without ContentURI"]
         U1 --> U2
     end
 
@@ -63,7 +63,7 @@ flowchart TD
     A["Alice deletes actor.grant record from PDS"]
     B["ATproto Relay reflects the deletion"]
     C["Bob requests content — next session"]
-    D["Gatekeeper reads PDS\ngrant record NOT FOUND"]
+    D["Gatekeeper reads PDS<br/>grant record NOT FOUND"]
     E["Gatekeeper returns 403 Forbidden"]
     F["Bob's client displays 'access revoked'"]
 
@@ -76,10 +76,10 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    G["Grant record\nsubjectDid: did:plc:bob\nissuerDid: did:plc:alice\nexpiry: 2024-12-31T23:59:59Z"]
+    G["Grant record<br/>subjectDid: did:plc:bob<br/>issuerDid: did:plc:alice<br/>expiry: 2024-12-31T23:59:59Z"]
     R["Bob requests content after expiry date"]
     CH{"now > expiry?"}
-    Y["403 Forbidden\ngrant expired"]
+    Y["403 Forbidden<br/>grant expired"]
     N["Proceed with JWT issuance"]
 
     G --> R --> CH
@@ -110,11 +110,11 @@ The `net.traiforce.actor.grant` record includes an `issuerDid` and a `signature`
 
 ```mermaid
 flowchart TD
-    GC["Grant creation by Alice\npayload = subjectDid + issuerDid + expiry\nsignature = sign(payload, alice_private_key)"]
-    GV["Grant verification by Gatekeeper\nalice_public_key = resolve(issuerDid)\nvalid = verify(payload, signature, alice_public_key)"]
+    GC["Grant creation by Alice<br/>payload = subjectDid + issuerDid + expiry<br/>signature = sign(payload, alice_private_key)"]
+    GV["Grant verification by Gatekeeper<br/>alice_public_key = resolve(issuerDid)<br/>valid = verify(payload, signature, alice_public_key)"]
     RES{"valid?"}
-    OK["Proceed with expiry check\nand JWT issuance"]
-    FAIL["Reject: 403 Forbidden\ntampered grant"]
+    OK["Proceed with expiry check<br/>and JWT issuance"]
+    FAIL["Reject: 403 Forbidden<br/>tampered grant"]
 
     GC --> GV --> RES
     RES -->|"true"| OK
