@@ -4,31 +4,28 @@
 
 Traiforce operates on a three-layer architecture where each layer has a distinct responsibility.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    TRIPARTITE DATA MODEL                        │
-│                                                                 │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌───────────────┐  │
-│  │  PUBLIC LAYER   │  │ ENCRYPTED/GATED │  │ COORDINATION  │  │
-│  │   (ATproto)     │  │     LAYER       │  │    LAYER      │  │
-│  │                 │  │  (IPFS/Pinata)  │  │ (Gatekeeper)  │  │
-│  │─────────────────│  │─────────────────│  │───────────────│  │
-│  │ • Social meta   │  │ • High-BW media │  │ • Validates   │  │
-│  │ • Discovery     │  │ • Sensitive     │  │   ATproto     │  │
-│  │   pointers      │  │   profile data  │  │   permissions │  │
-│  │ • Permission    │  │ • Encrypted     │  │ • Unlocks     │  │
-│  │   records       │  │   JSON blobs    │  │   IPFS content│  │
-│  │                 │  │                 │  │ • Issues JWT  │  │
-│  │  Stored in      │  │  Hosted on      │  │   URLs        │  │
-│  │  User PDS       │  │  Pinata         │  │               │  │
-│  └─────────────────┘  └─────────────────┘  └───────────────┘  │
-│          │                    │                    │            │
-│          └────────────────────┴────────────────────┘           │
-│                               │                                 │
-│                    ┌──────────▼──────────┐                     │
-│                    │  CLIENT APPLICATION  │                     │
-│                    └─────────────────────┘                     │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph Public["Public Layer — ATproto PDS"]
+        P1["Social metadata"]
+        P2["Discovery pointers"]
+        P3["Permission / grant records"]
+    end
+    subgraph Gated["Encrypted / Gated Layer — IPFS / Pinata"]
+        G1["High-bandwidth media"]
+        G2["Sensitive profile data"]
+        G3["Encrypted JSON blobs"]
+    end
+    subgraph Coord["Coordination Layer — Gatekeeper"]
+        C1["Validates ATproto permissions"]
+        C2["Unlocks IPFS content"]
+        C3["Issues JWT URLs"]
+    end
+    Client(["Client Application"])
+
+    Public --> Client
+    Gated  --> Client
+    Coord  --> Client
 ```
 
 ## Layer Descriptions
@@ -67,24 +64,16 @@ The **Coordination Layer** (Gatekeeper) is a decentralized sidecar service that 
 
 ## Layer Interactions
 
-```
-  ATproto PDS                 IPFS / Pinata
-      │                            │
-      │  Stores grant records      │  Stores encrypted blobs
-      │  (net.traiforce.actor.     │  (vaultCid, contentCid)
-      │   grant)                   │
-      │                            │
-      └──────────┐    ┌────────────┘
-                 │    │
-                 ▼    ▼
-             GATEKEEPER
-           (Coordination Layer)
-                 │
-                 │  Issues Submarined JWT URL
-                 ▼
-            CLIENT APP
-                 │
-                 │  Fetches content using JWT URL
-                 ▼
-          PINATA GATEWAY
+```mermaid
+flowchart TD
+    PDS["ATproto PDS\nStores grant records\nnet.traiforce.actor.grant"]
+    IPFS["IPFS / Pinata\nStores encrypted blobs\nvaultCid · contentCid"]
+    GK["GATEKEEPER\nCoordination Layer"]
+    CA["CLIENT APP"]
+    PG["PINATA GATEWAY"]
+
+    PDS -->|"grant records"| GK
+    IPFS -->|"encrypted blobs"| GK
+    GK -->|"Submarined JWT URL"| CA
+    CA -->|"Fetch content via JWT URL"| PG
 ```

@@ -10,36 +10,33 @@ The Traiforce Protocol defines three primary lexicon records in the `net.traifor
 
 Defines the user's presence on the Traiforce network.
 
-```
-┌──────────────────────────────────────────────────────────┐
-│              net.traiforce.actor.profile                 │
-├──────────────────┬──────────────────────────────────────┤
-│  Field           │  Description                         │
-├──────────────────┼──────────────────────────────────────┤
-│  displayName     │  Public-facing teaser name visible   │
-│  (string)        │  to all ATproto users                │
-├──────────────────┼──────────────────────────────────────┤
-│  vaultCid        │  IPFS CID pointing to an encrypted   │
-│  (string)        │  JSON blob of the full profile       │
-├──────────────────┼──────────────────────────────────────┤
-│  gatewayUrl      │  Address of the user's dedicated     │
-│  (string)        │  Pinata Gateway                      │
-│                  │  e.g., alice.mypinata.cloud          │
-└──────────────────┴──────────────────────────────────────┘
+```mermaid
+classDiagram
+    class `net.traiforce.actor.profile` {
+        +string displayName
+        +string vaultCid
+        +string gatewayUrl
+    }
 ```
 
+| Field | Type | Description |
+|---|---|---|
+| `displayName` | string | Public-facing teaser name visible to all ATproto users |
+| `vaultCid` | string | IPFS CID pointing to an encrypted JSON blob of the full profile |
+| `gatewayUrl` | string | Address of the user's dedicated Pinata Gateway (e.g., `alice.mypinata.cloud`) |
+
 **Data Flow:**
-```
-  User creates profile
-        │
-        ▼
-  Public displayName ──────────────────► ATproto PDS (readable by all)
-        │
-        ▼
-  Full profile JSON ──► encrypted ──► IPFS (vaultCid stored in PDS)
-        │
-        ▼
-  gatewayUrl ─────────────────────────► ATproto PDS (readable by all)
+
+```mermaid
+flowchart TD
+    UC["User creates profile"]
+    DN["displayName → ATproto PDS\nreadable by all"]
+    FP["Full profile JSON\n→ encrypted → IPFS\nvaultCid stored in PDS"]
+    GU["gatewayUrl → ATproto PDS\nreadable by all"]
+
+    UC --> DN
+    UC --> FP
+    UC --> GU
 ```
 
 ---
@@ -48,34 +45,33 @@ Defines the user's presence on the Traiforce network.
 
 The gated content pointer. References an encrypted piece of content on IPFS with a safe preview.
 
-```
-┌──────────────────────────────────────────────────────────┐
-│               net.traiforce.feed.item                    │
-├──────────────────┬──────────────────────────────────────┤
-│  Field           │  Description                         │
-├──────────────────┼──────────────────────────────────────┤
-│  contentCid      │  IPFS hash of the actual content     │
-│  (string)        │  (encrypted, requires authorization) │
-├──────────────────┼──────────────────────────────────────┤
-│  blurHash        │  L×W representation of the image for │
-│  (string)        │  safe public previews without        │
-│                  │  exposing the actual content         │
-├──────────────────┼──────────────────────────────────────┤
-│  gatekeeperDid   │  DID of the Gatekeeper service the   │
-│  (string)        │  client must contact for access      │
-└──────────────────┴──────────────────────────────────────┘
+```mermaid
+classDiagram
+    class `net.traiforce.feed.item` {
+        +string contentCid
+        +string blurHash
+        +string gatekeeperDid
+    }
 ```
 
+| Field | Type | Description |
+|---|---|---|
+| `contentCid` | string | IPFS hash of the actual content (encrypted, requires authorization) |
+| `blurHash` | string | L×W representation of the image for safe public previews |
+| `gatekeeperDid` | string | DID of the Gatekeeper service the client must contact for access |
+
 **Data Flow:**
-```
-  Creator uploads content
-        │
-        ▼
-  Content encrypted ──────────────────► IPFS (contentCid)
-        │
-        ├── blurHash generated ────────► ATproto PDS (public preview)
-        │
-        └── contentCid + gatekeeperDid ► ATproto PDS (feed.item record)
+
+```mermaid
+flowchart TD
+    CU["Creator uploads content"]
+    ENC["Content encrypted → IPFS\ncontentCid"]
+    BH["blurHash generated → ATproto PDS\npublic preview"]
+    FI["contentCid + gatekeeperDid → ATproto PDS\nfeed.item record"]
+
+    CU --> ENC
+    CU --> BH
+    CU --> FI
 ```
 
 ---
@@ -84,71 +80,54 @@ The gated content pointer. References an encrypted piece of content on IPFS with
 
 The Access Control List (ACL) entry. Authorizes a specific user to access gated content.
 
-```
-┌──────────────────────────────────────────────────────────┐
-│              net.traiforce.actor.grant                   │
-├──────────────────┬──────────────────────────────────────┤
-│  Field           │  Description                         │
-├──────────────────┼──────────────────────────────────────┤
-│  subjectDid      │  DID of the user being granted       │
-│  (string)        │  access to the content               │
-├──────────────────┼──────────────────────────────────────┤
-│  issuerDid       │  DID of the content creator          │
-│  (string)        │  issuing the grant                   │
-├──────────────────┼──────────────────────────────────────┤
-│  signature       │  Cryptographic signature from        │
-│  (string)        │  issuerDid verifying the grant       │
-├──────────────────┼──────────────────────────────────────┤
-│  expiry          │  Optional expiration timestamp;      │
-│  (datetime?)     │  checked by Gatekeeper on every      │
-│                  │  session handshake                   │
-└──────────────────┴──────────────────────────────────────┘
+```mermaid
+classDiagram
+    class `net.traiforce.actor.grant` {
+        +string subjectDid
+        +string issuerDid
+        +string signature
+        +datetime expiry
+    }
 ```
 
+| Field | Type | Description |
+|---|---|---|
+| `subjectDid` | string | DID of the user being granted access |
+| `issuerDid` | string | DID of the content creator issuing the grant |
+| `signature` | string | Cryptographic signature from `issuerDid` verifying the grant |
+| `expiry` | datetime? | Optional expiration timestamp; checked by Gatekeeper on every session handshake |
+
 **Data Flow:**
-```
-  Alice (issuer) decides to grant Bob access
-        │
-        ▼
-  Alice signs grant record with PDS key
-        │
-        ▼
-  grant record published to ATproto PDS
-        │
-        │       Later: Bob requests access
-        │               │
-        ▼               ▼
-  Gatekeeper reads grant record ──► verifies signature
-        │
-        ▼
-  Access provisioned (JWT URL issued)
+
+```mermaid
+flowchart TD
+    AD["Alice signs grant record with PDS key"]
+    PUB["Grant record published to ATproto PDS"]
+    BR["Bob requests access"]
+    GV["Gatekeeper reads grant record\n→ verifies signature"]
+    AP["Access provisioned\nJWT URL issued"]
+
+    AD --> PUB
+    PUB --> GV
+    BR --> GV
+    GV --> AP
 ```
 
 ---
 
 ## Lexicon Relationships
 
-```
-  net.traiforce.actor.profile          net.traiforce.feed.item
-  ┌──────────────────────┐             ┌──────────────────────┐
-  │ displayName          │             │ contentCid           │
-  │ vaultCid ──────────────► IPFS      │ blurHash             │
-  │ gatewayUrl           │             │ gatekeeperDid ──────────► Gatekeeper
-  └──────────────────────┘             └──────────────────────┘
-             │                                    │
-             │                                    │
-             └────────────────────────────────────┘
-                            │
-                            ▼
-              net.traiforce.actor.grant
-              ┌──────────────────────┐
-              │ subjectDid (Bob)     │
-              │ issuerDid  (Alice)   │
-              │ signature            │
-              │ expiry               │
-              └──────────────────────┘
-                            │
-                            ▼
-                       Gatekeeper
-                  (validates + issues JWT)
+```mermaid
+graph TD
+    AP["net.traiforce.actor.profile\n──────────────────\ndisplayName\nvaultCid\ngatewayUrl"]
+    FI["net.traiforce.feed.item\n──────────────────\ncontentCid\nblurHash\ngatekeeperDid"]
+    AG["net.traiforce.actor.grant\n──────────────────\nsubjectDid\nissuerDid\nsignature\nexpiry"]
+    IPFS[("IPFS")]
+    GK["Gatekeeper\nvalidates + issues JWT"]
+
+    AP -->|"vaultCid"| IPFS
+    FI -->|"gatekeeperDid"| GK
+    AP -->|"issuerDid"| AG
+    FI -->|"governs access to"| AG
+    AG --> GK
 ```

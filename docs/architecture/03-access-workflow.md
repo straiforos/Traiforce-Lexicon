@@ -18,54 +18,38 @@ The following diagram shows how a subscriber (Bob) discovers and accesses gated 
 
 ## Sequence Diagram
 
-```
-  Bob's Client      ATproto Relay     Bob's PDS      Gatekeeper      Pinata Gateway
-       │                  │               │               │                 │
-       │                  │               │               │                 │
-       │──(1) Fetch feed──►               │               │                 │
-       │                  │               │               │                 │
-       │◄── feed.item ────│               │               │                 │
-       │  (contentCid,    │               │               │                 │
-       │   blurHash,      │               │               │                 │
-       │   gatekeeperDid) │               │               │                 │
-       │                  │               │               │                 │
-       │  [Display blurHash preview]       │               │                 │
-       │                  │               │               │                 │
-       │──(2) Check grant record──────────►               │                 │
-       │  (look up net.traiforce.actor.grant for Bob)     │                 │
-       │                  │               │               │                 │
-       │◄──── grant found or not found ───│               │                 │
-       │                  │               │               │                 │
-       │  [If no grant: show subscribe prompt]            │                 │
-       │                  │               │               │                 │
-       │──(3) Request access challenge ───────────────────►                 │
-       │  (Bob's DID + contentCid)        │               │                 │
-       │                  │               │               │                 │
-       │◄── T_timestamp challenge ────────────────────────│                 │
-       │                  │               │               │                 │
-       │──(4) Sign challenge with PDS key─►               │                 │
-       │                  │               │               │                 │
-       │◄── signed_challenge ─────────────│               │                 │
-       │                  │               │               │                 │
-       │──(5) Submit signed challenge ────────────────────►                 │
-       │  (Bob's DID + signed_challenge)  │               │                 │
-       │                  │               │               │                 │
-       │                  │     [Gatekeeper verifies grant on ATproto]      │
-       │                  │               │               │                 │
-       │                  │     [Gatekeeper verifies signature]             │
-       │                  │               │               │                 │
-       │                  │     [Gatekeeper checks grant expiry]            │
-       │                  │               │               │                 │
-       │                  │     [Gatekeeper uses Alice's Pinata API Key]    │
-       │                  │               │               │                 │
-       │◄── Submarined JWT URL ───────────────────────────│                 │
-       │                  │               │               │                 │
-       │──(6) Fetch content using JWT URL ────────────────────────────────► │
-       │                  │               │               │                 │
-       │◄── Encrypted content blob ───────────────────────────────────────── │
-       │                  │               │               │                 │
-       │  [Decrypt and display content]    │               │                 │
-       │                  │               │               │                 │
+```mermaid
+sequenceDiagram
+    actor Bob as Bob's Client
+    participant Relay as ATproto Relay
+    participant PDS as Bob's PDS
+    participant GK as Gatekeeper
+    participant Pinata as Pinata Gateway
+
+    Bob->>Relay: (1) Fetch feed
+    Relay-->>Bob: feed.item (contentCid, blurHash, gatekeeperDid)
+    Note over Bob: Display blurHash preview
+
+    Bob->>PDS: (2) Check grant record for Bob's DID
+    PDS-->>Bob: grant found / not found
+    Note over Bob: If no grant: show subscribe prompt
+
+    Bob->>GK: (3) Request access challenge (Bob's DID + contentCid)
+    GK-->>Bob: T_timestamp challenge
+
+    Bob->>PDS: (4) Sign challenge with PDS key
+    PDS-->>Bob: signed_challenge
+
+    Bob->>GK: (5) Submit signed challenge (Bob's DID + signed_challenge)
+    Note over GK: Verify grant on ATproto
+    Note over GK: Verify signature
+    Note over GK: Check grant expiry
+    Note over GK: Use Alice's Pinata API Key
+    GK-->>Bob: Submarined JWT URL
+
+    Bob->>Pinata: (6) Fetch content using JWT URL
+    Pinata-->>Bob: Encrypted content blob
+    Note over Bob: Decrypt and display content
 ```
 
 ---
@@ -110,31 +94,17 @@ Bob's client uses the JWT URL to fetch the encrypted content blob from Alice's P
 
 ## Error Paths
 
-```
-  [No grant record found]
-        │
-        ▼
-  Client shows subscribe/purchase prompt
-        │
-        ▼
-  Alice issues net.traiforce.actor.grant for Bob
-        │
-        ▼
-  Bob retries from Step 2
+```mermaid
+flowchart TD
+    E{"Error type"}
 
-  [Grant expired]
-        │
-        ▼
-  Gatekeeper returns 403 Forbidden
-        │
-        ▼
-  Client prompts Bob to renew subscription
+    E -->|"No grant record found"| A1["Client shows subscribe / purchase prompt"]
+    A1 --> A2["Alice issues actor.grant for Bob"]
+    A2 --> A3["Bob retries from Step 2"]
 
-  [Invalid signature]
-        │
-        ▼
-  Gatekeeper returns 401 Unauthorized
-        │
-        ▼
-  Client re-initiates challenge from Step 3
+    E -->|"Grant expired"| B1["Gatekeeper returns 403 Forbidden"]
+    B1 --> B2["Client prompts Bob to renew subscription"]
+
+    E -->|"Invalid signature"| C1["Gatekeeper returns 401 Unauthorized"]
+    C1 --> C2["Client re-initiates challenge from Step 3"]
 ```
