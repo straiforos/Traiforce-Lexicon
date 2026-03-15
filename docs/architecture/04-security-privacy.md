@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Traiforce Protocol incorporates two key security and privacy mechanisms to protect user interactions and enable content revocation.
+The Traiforce Protocol incorporates security and privacy mechanisms to protect user interactions, enable content revocation, and enforce age gating.
 
 ---
 
@@ -120,3 +120,61 @@ flowchart TD
     RES -->|"true"| OK
     RES -->|"false"| FAIL
 ```
+
+---
+
+## 5. Minor Protection & Age Verification
+
+### Overview
+
+The `net.traiforce.verify.*` lexicons enable age gating without storing any PII on the ATproto PDS.
+
+### Credential Hash Generation
+
+The `credentialHash` field in `net.traiforce.verify.age` is computed by the Hono Gatekeeper during the OIDC callback:
+
+```
+credentialHash = SHA-256( HMAC-SHA256(key = TRAIFORCE_SALT, data = provider_sub) )
+```
+
+- **`provider_sub`** – the opaque subject identifier from the IAL2 provider's ID token (`sub` claim).
+- **`TRAIFORCE_SALT`** – a secret environment variable on the Gatekeeper; never stored in the PDS or client.
+
+```mermaid
+flowchart TD
+    OC["OIDC callback<br/>code → token exchange"]
+    ST["Extract sub from ID token"]
+    HM["HMAC-SHA256(key=TRAIFORCE_SALT, data=sub)"]
+    SH["SHA-256( HMAC output )"]
+    REC["Store credentialHash in<br/>net.traiforce.verify.age record"]
+
+    OC --> ST --> HM --> SH --> REC
+```
+
+### Anti-Sybil Property
+
+Because the same `sub` value combined with the same salt always produces the same hash, the Gatekeeper or AppView can detect when a single real-world identity attempts to verify multiple accounts:
+
+```mermaid
+flowchart LR
+    ID["Real-world identity<br/>(same sub)"]
+    A1["Account A<br/>credentialHash = H(salt,sub)"]
+    A2["Account B<br/>credentialHash = H(salt,sub)"]
+    DUP["Duplicate detected → reject"]
+
+    ID --> A1
+    ID --> A2
+    A1 -->|"hash collision"| DUP
+    A2 -->|"hash collision"| DUP
+```
+
+### Blind Verification
+
+The raw `sub` claim is never written to the ATproto PDS. Observers see only an opaque SHA-256 hex string and cannot reverse it to the original identity without knowledge of both the `sub` value and the `TRAIFORCE_SALT`.
+
+| Threat | Mitigation |
+|---|---|
+| PII exposure on PDS | `credentialHash` stores only a keyed hash; raw `sub` is discarded |
+| Multiple accounts per identity | Same `sub` → same hash; duplicates rejected by Gatekeeper |
+| Forged attestations | Record is signed by the Gatekeeper's ATproto key; verifiable via `provider`'s public keys |
+| Stale verifications | `expiresAt` field enforced on every read; re-verification required periodically |

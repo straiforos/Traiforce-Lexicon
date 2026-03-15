@@ -1,0 +1,29 @@
+{
+  "lexicon": 1,
+  "id": "net.traiforce.verify.status",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "Public-facing age-verification status record. The Keyhole.xxx AppView reads this record to decide whether to blur or display age-restricted content for a given viewer. This record contains no PII — it is a derived, boolean summary of the user's net.traiforce.verify.age attestation.",
+      "key": "literal:self",
+      "record": {
+        "type": "object",
+        "required": ["isVerified"],
+        "properties": {
+          "isVerified": {
+            "type": "boolean",
+            "description": "True when a valid net.traiforce.verify.age record exists for this account and has not yet expired. False otherwise."
+          },
+          "verifiedTier": {
+            "type": "string",
+            "knownValues": [
+              "net.traiforce.verify.age#adult18",
+              "net.traiforce.verify.age#adult21"
+            ],
+            "description": "The age tier confirmed by the linked age attestation. Omitted when isVerified is false."
+          }
+        }
+      }
+    }
+  }
+}

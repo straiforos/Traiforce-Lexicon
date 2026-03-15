@@ -8,7 +8,7 @@
     "lib"
   ],
   "scripts": {
-    "gen": "lex gen-api --yes src/types/ lexicons/net/traiforce/actor/profile.json lexicons/net/traiforce/actor/grant.json lexicons/net/traiforce/feed/item.json",
+    "gen": "lex gen-api --yes src/types/ lexicons/net/traiforce/actor/profile.json lexicons/net/traiforce/actor/grant.json lexicons/net/traiforce/feed/item.json lexicons/net/traiforce/verify/age.json lexicons/net/traiforce/verify/status.json",
     "build": "tsc",
     "prepublishOnly": "npm run gen && npm run build"
   },
