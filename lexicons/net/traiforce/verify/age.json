@@ -1,0 +1,46 @@
+{
+  "lexicon": 1,
+  "id": "net.traiforce.verify.age",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A cryptographically signed attestation that the account holder has passed IAL2 age verification. No PII is stored; only opaque hashes and provider metadata are recorded.",
+      "key": "literal:self",
+      "record": {
+        "type": "object",
+        "required": ["assertion", "provider", "credentialHash", "expiresAt"],
+        "properties": {
+          "assertion": {
+            "type": "string",
+            "knownValues": [
+              "net.traiforce.verify.age#adult18",
+              "net.traiforce.verify.age#adult21"
+            ],
+            "description": "Age tier asserted by the verification provider."
+          },
+          "provider": {
+            "type": "string",
+            "description": "URL or DID of the IAL2 identity verification provider (e.g. https://id.me, did:web:clear.com, did:web:yoti.com)."
+          },
+          "credentialHash": {
+            "type": "string",
+            "description": "Hex-encoded SHA-256 of HMAC-SHA256(key=traiforce_salt, data=provider_subject_id). Anti-sybil: a single real-world identity maps to exactly one hash value, preventing one person from verifying multiple accounts."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "datetime",
+            "description": "UTC datetime after which this attestation is considered stale and re-verification is required."
+          }
+        }
+      }
+    },
+    "adult18": {
+      "type": "token",
+      "description": "Attests that the holder is at least 18 years of age."
+    },
+    "adult21": {
+      "type": "token",
+      "description": "Attests that the holder is at least 21 years of age."
+    }
+  }
+}

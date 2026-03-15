@@ -2,7 +2,7 @@
 
 ## Core ATproto Lexicon Records
 
-The Traiforce Protocol defines three primary lexicon records in the `net.traiforce` namespace.
+The Traiforce Protocol defines five primary lexicon records in the `net.traiforce` namespace.
 
 ---
 
@@ -111,6 +111,104 @@ flowchart TD
     PUB --> GV
     BR --> GV
     GV --> AP
+```
+
+---
+
+## Lexicon Relationships
+
+```mermaid
+graph TD
+    AP["net.traiforce.actor.profile<br/>---<br/>displayName<br/>vaultCid<br/>gatewayUrl"]
+    FI["net.traiforce.feed.item<br/>---<br/>contentCid<br/>blurHash<br/>gatekeeperDid"]
+    AG["net.traiforce.actor.grant<br/>---<br/>subjectDid<br/>issuerDid<br/>signature<br/>expiry"]
+    VA["net.traiforce.verify.age<br/>---<br/>assertion<br/>provider<br/>credentialHash<br/>expiresAt"]
+    VS["net.traiforce.verify.status<br/>---<br/>isVerified<br/>verifiedTier"]
+    IPFS[("IPFS")]
+    GK["Gatekeeper<br/>validates + issues JWT"]
+    AV["AppView (Keyhole.xxx)<br/>blurs / unblurs content"]
+
+    AP -->|"vaultCid"| IPFS
+    FI -->|"gatekeeperDid"| GK
+    AP -->|"issuerDid"| AG
+    FI -->|"governs access to"| AG
+    AG --> GK
+    VA -->|"drives"| VS
+    VS -->|"isVerified"| AV
+```
+
+---
+
+## D. `net.traiforce.verify.age`
+
+A cryptographically signed attestation that the account holder has passed IAL2 age verification.
+No PII is stored; only opaque hashes and provider metadata are recorded.
+
+```mermaid
+classDiagram
+    class `net.traiforce.verify.age` {
+        +string assertion
+        +string provider
+        +string credentialHash
+        +datetime expiresAt
+    }
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `assertion` | token | Age tier: `net.traiforce.verify.age#adult18` or `net.traiforce.verify.age#adult21` |
+| `provider` | string | URL or DID of the IAL2 verification provider (e.g. `https://id.me`, `did:web:clear.com`) |
+| `credentialHash` | string | Hex SHA-256 of HMAC-SHA256(key=salt, data=provider `sub`). Anti-sybil: one real-world identity → one hash |
+| `expiresAt` | datetime | UTC expiry; after this timestamp re-verification is required |
+
+**Data Flow:**
+
+```mermaid
+flowchart TD
+    OC["User completes OIDC flow<br/>with IAL2 provider"]
+    GK["Gatekeeper receives callback<br/>extracts sub claim from ID token"]
+    CH["credentialHash = SHA-256( HMAC-SHA256(salt, sub) )<br/>PII never stored"]
+    REC["net.traiforce.verify.age record<br/>written to user's PDS"]
+    ST["net.traiforce.verify.status record<br/>updated: isVerified=true"]
+
+    OC --> GK --> CH --> REC --> ST
+```
+
+---
+
+## E. `net.traiforce.verify.status`
+
+Public-facing age-verification status record.
+The Keyhole.xxx AppView reads this record to decide whether to blur or display age-restricted content.
+
+```mermaid
+classDiagram
+    class `net.traiforce.verify.status` {
+        +boolean isVerified
+        +string verifiedTier
+    }
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `isVerified` | boolean | `true` when a valid, non-expired `net.traiforce.verify.age` record exists |
+| `verifiedTier` | token? | Highest confirmed age tier; omitted when `isVerified` is `false` |
+
+**Data Flow:**
+
+```mermaid
+flowchart TD
+    VA["net.traiforce.verify.age<br/>(Gatekeeper writes after OIDC callback)"]
+    VS["net.traiforce.verify.status<br/>isVerified=true<br/>verifiedTier=adult18"]
+    AV["AppView (Keyhole.xxx)<br/>reads isVerified"]
+    BC["Blur content for<br/>unverified viewers"]
+    UC["Show content to<br/>verified viewers"]
+
+    VA -->|"drives"| VS
+    VS -->|"isVerified=false"| BC
+    VS -->|"isVerified=true"| UC
+    AV --> BC
+    AV --> UC
 ```
 
 ---
