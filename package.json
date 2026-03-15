@@ -1,0 +1,40 @@
+{
+  "name": "@straiforos/traiforce-sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for the Traiforce Protocol ATproto lexicons",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "gen": "lex gen-api --yes src/types/ lexicons/net/traiforce/actor/profile.json lexicons/net/traiforce/actor/grant.json lexicons/net/traiforce/feed/item.json",
+    "build": "tsc",
+    "prepublishOnly": "npm run gen && npm run build"
+  },
+  "keywords": [
+    "atproto",
+    "lexicon",
+    "traiforce",
+    "sdk"
+  ],
+  "author": "straiforos",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/straiforos/Traiforce-Lexicon.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "dependencies": {
+    "@atproto/lexicon": "^0.6.2",
+    "@atproto/xrpc": "^0.7.7",
+    "multiformats": "^9.9.0"
+  },
+  "devDependencies": {
+    "@atproto/lex-cli": "^0.9.9",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.9.3"
+  }
+}
