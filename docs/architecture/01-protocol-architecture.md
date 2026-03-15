@@ -39,6 +39,7 @@ The **Public Layer** lives in the user's Personal Data Server (PDS) on the AT Pr
   - Social metadata (display names, avatars, public bios)
   - Discovery pointers referencing encrypted IPFS content
   - Permission/grant records that authorize other users
+  - Age-verification records (`verify.age`, `verify.status`) without PII
 - **Visibility**: Readable by the AT Protocol Relay network and any client.
 
 ### Encrypted / Gated Layer – IPFS via Pinata
@@ -66,14 +67,17 @@ The **Coordination Layer** (Gatekeeper) is a decentralized sidecar service that 
 
 ```mermaid
 flowchart TD
-    PDS["ATproto PDS<br/>Stores grant records<br/>net.traiforce.actor.grant"]
+    PDS["ATproto PDS<br/>Stores grant records<br/>net.traiforce.actor.grant<br/>Stores verify records<br/>net.traiforce.verify.age · verify.status"]
     IPFS["IPFS / Pinata<br/>Stores encrypted blobs<br/>vaultCid · contentCid"]
     GK["GATEKEEPER<br/>Coordination Layer"]
     CA["CLIENT APP"]
     PG["PINATA GATEWAY"]
+    AV["APPVIEW (Keyhole.xxx)<br/>Reads verify.status<br/>Blurs / unblurs content"]
 
     PDS -->|"grant records"| GK
+    PDS -->|"verify.status"| AV
     IPFS -->|"encrypted blobs"| GK
     GK -->|"Submarined JWT URL"| CA
     CA -->|"Fetch content via JWT URL"| PG
+    AV -->|"Blur / unblur decision"| CA
 ```
